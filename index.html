@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrackIt — Time Tracker for Creative Professionals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --cream: #ede8db;
+    --accent1: #ff4d00;   /* electric orange */
+    --accent2: #00e5b0;   /* neon mint */
+    --accent3: #c8ff00;   /* acid lime */
+    --accent4: #7c3aff;   /* deep violet */
+    --mid: #3a3a3a;
+    --rule: rgba(13,13,13,0.12);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.6;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 40px;
+    background: var(--paper);
+    border-bottom: 1.5px solid var(--rule);
+    mix-blend-mode: normal;
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--ink);
+    text-decoration: none;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .nav-logo .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent1);
+    display: inline-block;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.7; }
+  }
+  .nav-dl {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 10px 22px;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav-dl:hover { background: var(--accent1); color: #fff; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    padding: 120px 40px 80px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* diagonal accent stripe */
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: -200px; right: -300px;
+    width: 900px; height: 900px;
+    background: var(--accent3);
+    border-radius: 60% 40% 55% 45% / 45% 55% 45% 55%;
+    opacity: 0.18;
+    transform: rotate(-25deg);
+    pointer-events: none;
+  }
+
+  .hero-copy { position: relative; z-index: 2; }
+
+  .hero-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent1);
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: block; width: 40px; height: 2px;
+    background: var(--accent1);
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 9vw, 130px);
+    line-height: 0.92;
+    letter-spacing: 1px;
+    color: var(--ink);
+    margin-bottom: 30px;
+  }
+  h1 .stroke {
+    -webkit-text-stroke: 2px var(--ink);
+    color: transparent;
+  }
+  h1 .accent { color: var(--accent1); }
+
+  .hero-sub {
+    font-size: 19px;
+    font-weight: 300;
+    line-height: 1.6;
+    color: var(--mid);
+    max-width: 480px;
+    margin-bottom: 44px;
+  }
+  .hero-sub strong { font-weight: 700; color: var(--ink); }
+
+  .cta-row {
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  }
+  .btn-primary {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: var(--accent1);
+    color: #fff;
+    padding: 16px 36px;
+    text-decoration: none;
+    border: 2px solid var(--accent1);
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-primary::after {
+    content: '';
+    position: absolute; bottom: 0; left: -100%;
+    width: 100%; height: 3px;
+    background: var(--accent3);
+    transition: left 0.3s;
+  }
+  .btn-primary:hover { background: var(--ink); border-color: var(--ink); }
+  .btn-primary:hover::after { left: 0; }
+
+  .btn-ghost {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 1.5px;
+    color: var(--mid);
+    text-decoration: none;
+    display: flex; align-items: center; gap: 8px;
+    transition: color 0.2s;
+  }
+  .btn-ghost:hover { color: var(--ink); }
+  .btn-ghost svg { transition: transform 0.2s; }
+  .btn-ghost:hover svg { transform: translateX(4px); }
+
+  /* hero right — app mockup */
+  .hero-visual {
+    position: relative; z-index: 2;
+    display: flex; justify-content: center;
+  }
+  .app-frame {
+    width: 100%; max-width: 480px;
+    background: #1a1a1a;
+    border-radius: 12px;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.08),
+      0 40px 80px rgba(0,0,0,0.35),
+      0 0 60px rgba(255,77,0,0.12);
+    overflow: hidden;
+    transform: perspective(1200px) rotateY(-8deg) rotateX(3deg);
+    transition: transform 0.4s ease;
+  }
+  .app-frame:hover {
+    transform: perspective(1200px) rotateY(-3deg) rotateX(1deg);
+  }
+  .app-titlebar {
+    background: #111;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .tb-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .tb-dot.r { background: #ff5f57; }
+  .tb-dot.y { background: #febc2e; }
+  .tb-dot.g { background: #28c840; }
+  .tb-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    margin-left: 8px;
+  }
+  .app-body { padding: 20px; }
+  
+  /* Tracker card sim */
+  .sim-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 4px;
+  }
+  .sim-project {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 2px;
+    color: #fff;
+    margin-bottom: 2px;
+  }
+  .sim-timer {
+    font-family: 'Space Mono', monospace;
+    font-size: 42px;
+    color: var(--accent2);
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+    animation: tick 1s step-end infinite;
+  }
+  @keyframes tick {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+  .sim-bar-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  }
+  .sim-bar-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; color: rgba(255,255,255,0.5);
+    width: 90px; flex-shrink: 0;
+  }
+  .sim-bar-track {
+    flex: 1; height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px;
+  }
+  .sim-bar-fill {
+    height: 100%; border-radius: 3px;
+    animation: grow 2.5s ease-out forwards;
+  }
+  @keyframes grow { from { width: 0; } }
+  .sim-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 14px 0; }
+  .sim-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+  }
+  .sim-row-k {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px; color: rgba(255,255,255,0.45);
+  }
+  .sim-row-v {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px; color: rgba(255,255,255,0.85);
+  }
+  .sim-pill {
+    display: inline-block;
+    background: rgba(0,229,176,0.15);
+    color: var(--accent2);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 1px;
+    padding: 4px 10px; border-radius: 20px;
+    border: 1px solid rgba(0,229,176,0.3);
+  }
+
+  /* ── MARQUEE ── */
+  .marquee-wrap {
+    background: var(--ink);
+    padding: 16px 0;
+    overflow: hidden;
+    border-top: 2px solid var(--accent1);
+    border-bottom: 2px solid var(--accent1);
+  }
+  .marquee-track {
+    display: flex; gap: 0;
+    animation: marquee 20s linear infinite;
+    white-space: nowrap;
+  }
+  .marquee-track span {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 3px;
+    color: var(--paper);
+    padding: 0 32px;
+  }
+  .marquee-track span.hi { color: var(--accent1); }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ── FEATURES ── */
+  .features {
+    padding: 100px 40px;
+    max-width: 1200px; margin: 0 auto;
+  }
+  .section-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--accent4);
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-eyebrow::before {
+    content: ''; display: block; width: 28px; height: 2px; background: var(--accent4);
+  }
+  .section-h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 6vw, 80px);
+    line-height: 0.95;
+    margin-bottom: 60px;
+    color: var(--ink);
+  }
+  .section-h2 em { font-style: normal; color: var(--accent4); }
+
+  .feat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--rule);
+  }
+  .feat-card {
+    background: var(--paper);
+    padding: 40px 36px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.25s;
+  }
+  .feat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 3px;
+    background: transparent;
+    transition: background 0.25s;
+  }
+  .feat-card:hover { background: var(--cream); }
+  .feat-card:hover::before { background: var(--accent1); }
+  .feat-card:nth-child(2):hover::before { background: var(--accent2); }
+  .feat-card:nth-child(3):hover::before { background: var(--accent3); }
+  .feat-card:nth-child(4):hover::before { background: var(--accent4); }
+  .feat-card:nth-child(5):hover::before { background: var(--accent1); }
+  .feat-card:nth-child(6):hover::before { background: var(--accent2); }
+
+  .feat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    color: var(--rule);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .feat-icon {
+    font-size: 32px; margin-bottom: 16px; display: block;
+  }
+  .feat-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 19px; font-weight: 700;
+    color: var(--ink); margin-bottom: 10px;
+  }
+  .feat-desc {
+    font-size: 15px; font-weight: 300; line-height: 1.65;
+    color: var(--mid);
+  }
+
+  /* ── STATS ── */
+  .stats-band {
+    background: var(--ink);
+    padding: 80px 40px;
+  }
+  .stats-inner {
+    max-width: 1000px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 40px; text-align: center;
+  }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 64px; line-height: 1;
+    color: var(--accent1);
+    display: block;
+  }
+  .stat-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: rgba(245,240,232,0.45);
+    margin-top: 8px;
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how {
+    padding: 100px 40px;
+    max-width: 1000px; margin: 0 auto;
+  }
+  .steps {
+    display: flex; flex-direction: column; gap: 0;
+    position: relative;
+  }
+  .steps::before {
+    content: '';
+    position: absolute; left: 28px; top: 0; bottom: 0;
+    width: 2px; background: var(--rule);
+  }
+  .step {
+    display: flex; gap: 40px; align-items: flex-start;
+    padding: 40px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: 2px;
+    width: 58px; height: 58px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--paper);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    position: relative; z-index: 1;
+  }
+  .step:nth-child(2) .step-num { background: var(--accent1); }
+  .step:nth-child(3) .step-num { background: var(--accent4); }
+  .step:nth-child(4) .step-num { background: var(--accent2); color: var(--ink); }
+  .step-copy h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 22px; font-weight: 700;
+    margin-bottom: 8px; color: var(--ink);
+  }
+  .step-copy p {
+    font-size: 16px; font-weight: 300; line-height: 1.7;
+    color: var(--mid); max-width: 560px;
+  }
+  .step-copy code {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    background: var(--cream);
+    padding: 2px 8px; border-radius: 3px;
+    color: var(--accent1);
+  }
+
+  /* ── APPS ── */
+  .apps-section {
+    background: var(--cream);
+    padding: 80px 40px;
+    text-align: center;
+    border-top: 1.5px solid var(--rule);
+    border-bottom: 1.5px solid var(--rule);
+  }
+  .apps-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--mid); margin-bottom: 32px;
+  }
+  .apps-pills {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+    max-width: 800px; margin: 0 auto;
+  }
+  .app-pill {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px; letter-spacing: 1px;
+    padding: 9px 18px;
+    background: var(--paper);
+    border: 1.5px solid var(--rule);
+    color: var(--mid);
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+  .app-pill:hover {
+    border-color: var(--accent1);
+    color: var(--accent1);
+    background: var(--paper);
+  }
+  .app-pill.featured {
+    background: var(--ink); color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  /* ── INVOICE PREVIEW ── */
+  .invoice-section {
+    padding: 100px 40px;
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: center;
+  }
+  .invoice-mockup {
+    background: #fff;
+    border: 1.5px solid rgba(0,0,0,0.1);
+    box-shadow: 8px 8px 0 var(--accent3), 14px 14px 0 var(--rule);
+    padding: 32px;
+    font-size: 13px; color: #333;
+  }
+  .inv-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 24px; padding-bottom: 20px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .inv-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px; letter-spacing: 3px; color: var(--ink);
+  }
+  .inv-meta { text-align: right; font-size: 12px; color: #888; line-height: 1.6; }
+  .inv-meta strong { color: var(--ink); font-weight: 700; }
+  .inv-bill { margin-bottom: 20px; }
+  .inv-bill p { margin-bottom: 2px; line-height: 1.5; }
+  .inv-bill .label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #aaa; }
+  .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
+  .inv-table th {
+    text-align: left; padding: 8px 10px;
+    background: var(--ink); color: var(--paper);
+    font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1px;
+  }
+  .inv-table td { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; }
+  .inv-total {
+    display: flex; justify-content: flex-end;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 2px;
+    gap: 20px;
+  }
+  .inv-total span { color: var(--accent1); }
+
+  /* ── DOWNLOAD CTA ── */
+  .dl-section {
+    background: var(--ink);
+    padding: 100px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .dl-section::before {
+    content: 'TRACKIT';
+    position: absolute;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 280px; letter-spacing: 10px;
+    color: rgba(255,255,255,0.025);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .dl-section h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 7vw, 96px);
+    color: var(--paper);
+    line-height: 0.95;
+    margin-bottom: 20px;
+    position: relative; z-index: 1;
+  }
+  .dl-section h2 em {
+    font-style: normal; color: var(--accent1);
+  }
+  .dl-sub {
+    font-size: 17px; font-weight: 300; color: rgba(245,240,232,0.55);
+    margin-bottom: 48px;
+    position: relative; z-index: 1;
+  }
+  .dl-btn {
+    display: inline-flex; align-items: center; gap: 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 14px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    background: var(--accent1); color: #fff;
+    padding: 20px 48px;
+    text-decoration: none;
+    position: relative; z-index: 1;
+    transition: all 0.2s;
+    border: 2px solid var(--accent1);
+  }
+  .dl-btn:hover {
+    background: transparent; color: var(--accent1);
+  }
+  .dl-btn svg { flex-shrink: 0; }
+  .dl-note {
+    margin-top: 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; letter-spacing: 1px;
+    color: rgba(245,240,232,0.3);
+    position: relative; z-index: 1;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1.5px solid var(--rule);
+    padding: 32px 40px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .foot-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 3px; color: var(--mid);
+  }
+  .foot-copy {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; color: rgba(13,13,13,0.3); letter-spacing: 1px;
+  }
+
+  /* ── SCROLL ANIMATIONS ── */
+  .reveal {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; padding-top: 100px; }
+    .app-frame { transform: none; max-width: 360px; }
+    .feat-grid { grid-template-columns: 1fr 1fr; }
+    .stats-inner { grid-template-columns: 1fr 1fr; }
+    .invoice-section { grid-template-columns: 1fr; }
+    nav { padding: 14px 20px; }
+    .hero { padding: 100px 20px 60px; }
+    .features, .how, .apps-section, .invoice-section, .dl-section { padding-left: 20px; padding-right: 20px; }
+  }
+  @media (max-width: 600px) {
+    .feat-grid { grid-template-columns: 1fr; }
+    .stats-inner { grid-template-columns: 1fr 1fr; }
+    h1 { font-size: 64px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <span class="dot"></span>
+    TrackIt
+  </a>
+  <a href="#download" class="nav-dl">↓ Download Free</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-copy reveal">
+    <p class="hero-eyebrow">For video editors &amp; creative pros</p>
+    <h1>
+      Stop<br>
+      <span class="stroke">Losing</span><br>
+      <span class="accent">Hours.</span>
+    </h1>
+    <p class="hero-sub">
+      TrackIt automatically clocks your time in <strong>Premiere, Resolve, After Effects</strong> and 14 other apps — so you can focus on the work, not the spreadsheet.
+    </p>
+    <div class="cta-row">
+      <a href="#download" class="btn-primary">Download for Windows</a>
+      <a href="#how" class="btn-ghost">
+        See how it works
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="hero-visual reveal" style="transition-delay:0.2s">
+    <div class="app-frame">
+      <div class="app-titlebar">
+        <div class="tb-dot r"></div>
+        <div class="tb-dot y"></div>
+        <div class="tb-dot g"></div>
+        <span class="tb-title">TrackIt v34</span>
+      </div>
+      <div class="app-body">
+        <div class="sim-label">NOW TRACKING</div>
+        <div class="sim-project">Brand Film — Finale</div>
+        <div class="sim-timer">02:47:19</div>
+
+        <div class="sim-bar-row">
+          <span class="sim-bar-label">Rutus April</span>
+          <div class="sim-bar-track">
+            <div class="sim-bar-fill" style="width:68%;background:var(--accent2)"></div>
+          </div>
+        </div>
+        <div class="sim-bar-row">
+          <span class="sim-bar-label">Brand Film</span>
+          <div class="sim-bar-track">
+            <div class="sim-bar-fill" style="width:42%;background:var(--accent1);animation-delay:0.3s"></div>
+          </div>
+        </div>
+        <div class="sim-bar-row">
+          <span class="sim-bar-label">Social Pack</span>
+          <div class="sim-bar-track">
+            <div class="sim-bar-fill" style="width:23%;background:var(--accent3);animation-delay:0.6s"></div>
+          </div>
+        </div>
+
+        <div class="sim-divider"></div>
+        <div class="sim-row">
+          <span class="sim-row-k">Today's earnings</span>
+          <span class="sim-row-v">₹ 1,390</span>
+        </div>
+        <div class="sim-row">
+          <span class="sim-row-k">Rate</span>
+          <span class="sim-row-v">₹ 500 / hr</span>
+        </div>
+        <div class="sim-row">
+          <span class="sim-row-k">Status</span>
+          <span class="sim-pill">● ACTIVE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span>AUTO TRACKING</span><span class="hi">●</span>
+    <span>INVOICE GENERATOR</span><span class="hi">●</span>
+    <span>REPORTS &amp; CHARTS</span><span class="hi">●</span>
+    <span>DARK &amp; LIGHT THEMES</span><span class="hi">●</span>
+    <span>PREMIERE PRO</span><span class="hi">●</span>
+    <span>DAVINCI RESOLVE</span><span class="hi">●</span>
+    <span>AFTER EFFECTS</span><span class="hi">●</span>
+    <span>NO SUBSCRIPTION</span><span class="hi">●</span>
+    <!-- dupe for seamless loop -->
+    <span>AUTO TRACKING</span><span class="hi">●</span>
+    <span>INVOICE GENERATOR</span><span class="hi">●</span>
+    <span>REPORTS &amp; CHARTS</span><span class="hi">●</span>
+    <span>DARK &amp; LIGHT THEMES</span><span class="hi">●</span>
+    <span>PREMIERE PRO</span><span class="hi">●</span>
+    <span>DAVINCI RESOLVE</span><span class="hi">●</span>
+    <span>AFTER EFFECTS</span><span class="hi">●</span>
+    <span>NO SUBSCRIPTION</span><span class="hi">●</span>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features">
+  <p class="section-eyebrow reveal">What it does</p>
+  <h2 class="section-h2 reveal">Built for editors<br>who bill <em>clients.</em></h2>
+
+  <div class="feat-grid">
+    <div class="feat-card reveal">
+      <div class="feat-num">01</div>
+      <span class="feat-icon">⚡</span>
+      <div class="feat-title">Zero-click time tracking</div>
+      <p class="feat-desc">Opens in system tray and silently watches for active project windows. The moment you start editing, the clock starts. No timers to start or forget.</p>
+    </div>
+    <div class="feat-card reveal" style="transition-delay:0.1s">
+      <div class="feat-num">02</div>
+      <span class="feat-icon">🧠</span>
+      <div class="feat-title">Reads the title bar</div>
+      <p class="feat-desc">Detects the exact project file open in Premiere, Resolve, AE and more. Automatically creates a new project entry the first time you open a file.</p>
+    </div>
+    <div class="feat-card reveal" style="transition-delay:0.2s">
+      <div class="feat-num">03</div>
+      <span class="feat-icon">💸</span>
+      <div class="feat-title">Invoice in two clicks</div>
+      <p class="feat-desc">Set your hourly rate, pick the sessions, hit Generate. Get a clean HTML invoice ready to send — with editable totals, client info, and GST support.</p>
+    </div>
+    <div class="feat-card reveal" style="transition-delay:0.1s">
+      <div class="feat-num">04</div>
+      <span class="feat-icon">📊</span>
+      <div class="feat-title">Reports tab</div>
+      <p class="feat-desc">Weekly and monthly summaries with bar charts, a daily activity heatmap, and per-project breakdowns. Export to PDF for your records or clients.</p>
+    </div>
+    <div class="feat-card reveal" style="transition-delay:0.2s">
+      <div class="feat-num">05</div>
+      <span class="feat-icon">🎯</span>
+      <div class="feat-title">Budget tracking</div>
+      <p class="feat-desc">Set estimated hours per project. A live progress bar shows you exactly where you stand — before you accidentally go over.</p>
+    </div>
+    <div class="feat-card reveal" style="transition-delay:0.3s">
+      <div class="feat-num">06</div>
+      <span class="feat-icon">🌗</span>
+      <div class="feat-title">Dark &amp; light themes</div>
+      <p class="feat-desc">Switch between dark and light mode with one click. Preference is saved. Works comfortably at midnight and in daylight client calls.</p>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-band">
+  <div class="stats-inner">
+    <div class="reveal">
+      <span class="stat-num">15+</span>
+      <div class="stat-label">Creative apps supported</div>
+    </div>
+    <div class="reveal" style="transition-delay:0.1s">
+      <span class="stat-num">0</span>
+      <div class="stat-label">Clicks to start tracking</div>
+    </div>
+    <div class="reveal" style="transition-delay:0.2s">
+      <span class="stat-num">100%</span>
+      <div class="stat-label">Offline — no cloud required</div>
+    </div>
+    <div class="reveal" style="transition-delay:0.3s">
+      <span class="stat-num">Free</span>
+      <div class="stat-label">No subscription ever</div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <p class="section-eyebrow reveal">How it works</p>
+  <h2 class="section-h2 reveal">Four steps.<br><em>That's it.</em></h2>
+
+  <div class="steps">
+    <div class="step reveal">
+      <div class="step-num">1</div>
+      <div class="step-copy">
+        <h3>Install and launch</h3>
+        <p>Run <code>TrackIt.exe</code>. It lives in your system tray — no installation wizard, no admin rights needed. Opens on Windows startup if you want.</p>
+      </div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">2</div>
+      <div class="step-copy">
+        <h3>Open a project in any supported app</h3>
+        <p>TrackIt detects the foreground window. First time it sees a new project file, a small popup asks: <em>New project detected — want to track it?</em> Hit Yes once.</p>
+      </div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">3</div>
+      <div class="step-copy">
+        <h3>Work normally</h3>
+        <p>The timer runs while your project is in focus. Switch to Lumetri, export dialogs, or other panels — it keeps running. Switch to Chrome or Discord — it pauses automatically.</p>
+      </div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">4</div>
+      <div class="step-copy">
+        <h3>Invoice from the History tab</h3>
+        <p>Go to History → select sessions → Generate Invoice. Edit the HTML preview inside the app, then open in browser and print or export to PDF.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SUPPORTED APPS -->
+<section class="apps-section">
+  <p class="apps-eyebrow">Supported creative apps</p>
+  <div class="apps-pills">
+    <div class="app-pill featured">Adobe Premiere Pro</div>
+    <div class="app-pill featured">DaVinci Resolve</div>
+    <div class="app-pill featured">After Effects</div>
+    <div class="app-pill">Photoshop</div>
+    <div class="app-pill">Illustrator</div>
+    <div class="app-pill">Audition</div>
+    <div class="app-pill">Blender</div>
+    <div class="app-pill">Figma</div>
+    <div class="app-pill">Maya</div>
+    <div class="app-pill">CapCut</div>
+    <div class="app-pill">Vegas Pro</div>
+    <div class="app-pill">FL Studio</div>
+    <div class="app-pill">Ableton Live</div>
+    <div class="app-pill">+ more</div>
+  </div>
+</section>
+
+<!-- INVOICE MOCKUP -->
+<section class="invoice-section">
+  <div class="reveal">
+    <p class="section-eyebrow">Invoice generator</p>
+    <h2 class="section-h2" style="font-size:clamp(40px,5vw,64px)">Send invoices<br>without <em>the faff.</em></h2>
+    <p style="font-size:16px;font-weight:300;line-height:1.7;color:var(--mid);margin-bottom:24px">
+      Pick sessions from your history, set the rate, add client details and GST — TrackIt generates a clean HTML invoice you can print or email. Re-edit any old invoice at any time.
+    </p>
+    <ul style="list-style:none;display:flex;flex-direction:column;gap:10px">
+      <li style="display:flex;gap:10px;font-size:15px;color:var(--mid)"><span style="color:var(--accent1);font-weight:700">✓</span> Per-session editable amounts</li>
+      <li style="display:flex;gap:10px;font-size:15px;color:var(--mid)"><span style="color:var(--accent1);font-weight:700">✓</span> Multi-line client &amp; billing info</li>
+      <li style="display:flex;gap:10px;font-size:15px;color:var(--mid)"><span style="color:var(--accent1);font-weight:700">✓</span> GST / tax line support</li>
+      <li style="display:flex;gap:10px;font-size:15px;color:var(--mid)"><span style="color:var(--accent1);font-weight:700">✓</span> Saved invoice history — re-edit anytime</li>
+      <li style="display:flex;gap:10px;font-size:15px;color:var(--mid)"><span style="color:var(--accent1);font-weight:700">✓</span> Manual invoices with custom line items</li>
+    </ul>
+  </div>
+
+  <div class="reveal" style="transition-delay:0.2s">
+    <div class="invoice-mockup">
+      <div class="inv-header">
+        <div>
+          <div class="inv-logo">TrackIt</div>
+          <div style="font-size:11px;color:#aaa;margin-top:4px">Akshy Creative</div>
+        </div>
+        <div class="inv-meta">
+          <div><strong>INVOICE</strong></div>
+          <div>INV-20260526</div>
+          <div>26 May 2026</div>
+          <div style="margin-top:6px;color:#333"><strong>Due: 02 Jun 2026</strong></div>
+        </div>
+      </div>
+      <div class="inv-bill">
+        <div class="label">Bill To</div>
+        <p><strong>Rutus Productions</strong></p>
+        <p>Mumbai, Maharashtra</p>
+        <p>GST: 27XXXXX1234Z1</p>
+      </div>
+      <table class="inv-table">
+        <thead>
+          <tr><th>Description</th><th>Duration</th><th>Amount</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Rutus April Edit</td><td>3h 20m</td><td>₹ 5,000</td></tr>
+          <tr><td>Rutus April Edit</td><td>4h 10m</td><td>₹ 6,250</td></tr>
+          <tr><td>Color grade</td><td>2h 30m</td><td>₹ 3,750</td></tr>
+        </tbody>
+      </table>
+      <div class="inv-total">
+        TOTAL DUE <span>₹ 15,000</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<section class="dl-section" id="download">
+  <h2 class="reveal">Start tracking<br><em>right now.</em></h2>
+  <p class="dl-sub reveal">Free. No account. No internet required. Just unzip and run.</p>
+  <a href="trackit-windows_v34.zip" class="dl-btn reveal">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Download TrackIt v34
+  </a>
+  <p class="dl-note reveal">Windows 10/11 · ~12MB · No installation required</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">TrackIt</div>
+  <div class="foot-copy">© 2026 · Built for creative professionals</div>
+</footer>
+
+<script>
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Animate timer
+const timer = document.querySelector('.sim-timer');
+let s = 2839, i = 0;
+setInterval(() => {
+  s++;
+  const h = String(Math.floor(s/3600)).padStart(2,'0');
+  const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
+  const sec = String(s%60).padStart(2,'0');
+  timer.textContent = `${h}:${m}:${sec}`;
+}, 1000);
+</script>
+</body>
+</html>
